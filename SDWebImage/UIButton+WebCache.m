@@ -163,6 +163,19 @@
         [self setImage:image forState:UIControlStateSelected];
         [self setImage:image forState:UIControlStateHighlighted];
     }
+    
+    self.imageView.alpha = 0.0;
+    
+    [UIView animateWithDuration:0.5 delay:0.0 options:UIViewAnimationOptionLayoutSubviews animations:^{
+        
+        self.imageView.alpha = 1.0;
+        
+    } completion:^(BOOL finishd){
+        
+        // All done with fancy fade!
+        
+        
+    }];
 }
 
 @end
