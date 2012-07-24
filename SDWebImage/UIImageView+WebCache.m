@@ -7,6 +7,7 @@
  */
 
 #import "UIImageView+WebCache.h"
+#import <QuartzCore/QuartzCore.h>
 
 @implementation UIImageView (WebCache)
 
@@ -69,14 +70,24 @@
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didProgressWithPartialImage:(UIImage *)image forURL:(NSURL *)url
 {
-    self.image = image;
-    [self setNeedsLayout];
+    CATransition *animation = [CATransition animation];
+    animation.duration = WWS_DEFAULT_IMAGE_FADE_DURATION;
+    animation.type = kCATransitionFade;
+    [animation setRemovedOnCompletion:TRUE];
+    [[self layer] addAnimation:animation forKey:@"setImage"];
+    [self setImage:image];
 }
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image
 {
-    self.image = image;
-    [self setNeedsLayout];
+
+    CATransition *animation = [CATransition animation];
+    animation.duration = WWS_DEFAULT_IMAGE_FADE_DURATION;
+    animation.type = kCATransitionFade;
+    [animation setRemovedOnCompletion:TRUE];
+    [[self layer] addAnimation:animation forKey:@"setImage"];
+    [self setImage:image];
+    
 }
 
 @end

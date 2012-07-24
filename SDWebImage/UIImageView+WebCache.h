@@ -10,6 +10,9 @@
 #import "SDWebImageManagerDelegate.h"
 #import "SDWebImageManager.h"
 
+#define WWS_DEFAULT_IMAGE_FADE_DURATION 0.5
+
+
 /**
  * Integrates SDWebImage async downloading and caching of remote images with UIImageView.
  *
