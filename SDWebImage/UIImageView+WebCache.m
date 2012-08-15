@@ -70,24 +70,32 @@
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didProgressWithPartialImage:(UIImage *)image forURL:(NSURL *)url
 {
-    CATransition *animation = [CATransition animation];
-    animation.duration = WWS_DEFAULT_IMAGE_FADE_DURATION;
-    animation.type = kCATransitionFade;
-    [animation setRemovedOnCompletion:TRUE];
-    [[self layer] addAnimation:animation forKey:@"setImage"];
-    [self setImage:image];
+    
+    
+    if (!(image.size.width == 1.0 && image.size.height == 1.0)) {
+        CATransition *animation = [CATransition animation];
+        animation.duration = WWS_DEFAULT_IMAGE_FADE_DURATION;
+        animation.type = kCATransitionFade;
+        [animation setRemovedOnCompletion:TRUE];
+        [[self layer] addAnimation:animation forKey:@"setImage"];
+        [self setImage:image];
+    }
+    
+    
 }
 
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image
 {
 
-    CATransition *animation = [CATransition animation];
-    animation.duration = WWS_DEFAULT_IMAGE_FADE_DURATION;
-    animation.type = kCATransitionFade;
-    [animation setRemovedOnCompletion:TRUE];
-    [[self layer] addAnimation:animation forKey:@"setImage"];
-    [self setImage:image];
     
+    if (!(image.size.width == 1.0 && image.size.height == 1.0)) {
+        CATransition *animation = [CATransition animation];
+        animation.duration = WWS_DEFAULT_IMAGE_FADE_DURATION;
+        animation.type = kCATransitionFade;
+        [animation setRemovedOnCompletion:TRUE];
+        [[self layer] addAnimation:animation forKey:@"setImage"];
+        [self setImage:image];
+    }
 }
 
 @end
