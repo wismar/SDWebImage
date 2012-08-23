@@ -75,7 +75,11 @@ static SDWebImagePrefetcher *instance;
 - (void)webImageManager:(SDWebImageManager *)imageManager didFinishWithImage:(UIImage *)image
 {
     _finishedCount++;
-    NSLog(@"Prefetched %d out of %d", _finishedCount, [self.prefetchURLs count]);
+    
+    if (_finishedCount % 100 == 0) {
+        NSLog(@"Prefetched %d out of %d", _finishedCount, [self.prefetchURLs count]);
+    }
+    
 
     if ([self.prefetchURLs count] > _requestedCount)
     {
