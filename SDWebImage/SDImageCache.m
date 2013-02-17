@@ -13,7 +13,11 @@
 #import <mach/mach.h>
 #import <mach/mach_host.h>
 
-static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7 * 2; // 2 weeks
+
+
+
+
+static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7; // 1 weeks
 
 
 @interface SDImageCache ()
@@ -108,10 +112,7 @@ static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7 * 2; // 2 wee
     
     if (toMemory) {
         [self.memCache setObject:image forKey:key cost:image.size.height * image.size.width * image.scale];
-    } else {
-        NSLog(@"Disk only store");
-    }
-    
+    } 
     
     if (toDisk)
     {
@@ -246,7 +247,7 @@ static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7 * 2; // 2 wee
 
 - (void)clearMemory
 {
-    NSLog(@"Cleaning memory cache of %d objects", [self.memCache countLimit]);
+    NSLog(@"ImageCache: Cleaning memory cache of %d objects", [self.memCache countLimit]);
     [self.memCache removeAllObjects];
 }
 

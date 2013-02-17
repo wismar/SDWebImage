@@ -59,7 +59,14 @@
     
     if ([[SDImageCache sharedImageCache] diskCacheExistsForKey:self.prefetchURLs[index]]) {
         self.finishedCount++;
-        NSLog(@"Disk-only Prefetched %d out of %d (%@)", self.finishedCount, self.prefetchURLs.count,self.prefetchURLs[index]);
+        
+        if (self.finishedCount % 100 == 0) {
+            NSLog(@"ImageCache: Disk-only Prefetched %d out of %d (%@)", self.finishedCount, self.prefetchURLs.count,self.prefetchURLs[index]);
+            
+        }
+        
+        
+        
         if (self.prefetchURLs.count > self.requestedCount)
         {
             [self startPrefetchingAtIndex:self.requestedCount];
@@ -78,12 +85,15 @@
 
         if (image)
         {
-            NSLog(@"Prefetched(%@) %d out of %d", self.prefetchURLs[index], self.finishedCount, self.prefetchURLs.count);
+            if (self.finishedCount % 100 == 0) {
+                NSLog(@"ImageCache: Prefetched %d out of %d", self.finishedCount, self.prefetchURLs.count);
+            }
         }
         else
         {
-            NSLog(@"Prefetched(%@) %d out of %d (Failed)", self.prefetchURLs[index], self.finishedCount, [self.prefetchURLs count]);
-
+            if (self.finishedCount % 100 == 0) {
+                NSLog(@"ImageCache: Prefetched %d out of %d (Failed)", self.finishedCount, [self.prefetchURLs count]);
+            }
             // Add last failed
             self.skippedCount++;
         }
@@ -103,7 +113,7 @@
 {
 
     NSUInteger total = [self.prefetchURLs count];
-    NSLog(@"Finished prefetching (%d successful, %d skipped, timeElasped %.2f)", total - self.skippedCount, self.skippedCount, CFAbsoluteTimeGetCurrent() - self.startedTime);
+    NSLog(@"ImageCache: Finished prefetching (%d successful, %d skipped, timeElasped %.2f)", total - self.skippedCount, self.skippedCount, CFAbsoluteTimeGetCurrent() - self.startedTime);
 
 }
 
