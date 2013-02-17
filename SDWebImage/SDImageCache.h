@@ -44,6 +44,10 @@ typedef enum SDImageCacheType SDImageCacheType;
  */
 + (SDImageCache *)sharedImageCache;
 
+
+- (NSString *)cachePathForKey:(NSString *)key;
+
+
 /**
  * Init a new cache store with a specific namespace
  *
@@ -80,12 +84,42 @@ typedef enum SDImageCacheType SDImageCacheType;
  */
 - (void)storeImage:(UIImage *)image imageData:(NSData *)data forKey:(NSString *)key toDisk:(BOOL)toDisk;
 
+
+/**
+ * Store an image into memory and optionally disk cache at the given key.
+ *
+ * @param image The image to store
+ * @param data The image data as returned by the server, this representation will be used for disk storage
+ *             instead of converting the given image object into a storable/compressed image format in order
+ *             to save quality and CPU
+ * @param key The unique image cache key, usually it's image absolute URL
+ * @param toDisk Store the image to disk cache if YES
+ * @param toMemory Store the image in memory cache if YES
+ */
+- (void)storeImage:(UIImage *)image imageData:(NSData *)data forKey:(NSString *)key toDisk:(BOOL)toDisk toMemory:(BOOL)toMemory;
+
 /**
  * Query the disk cache asynchronousely.
  *
  * @param key The unique key used to store the wanted image
  */
 - (void)queryDiskCacheForKey:(NSString *)key done:(void (^)(UIImage *image, SDImageCacheType cacheType))doneBlock;
+
+/**
+ * Query the disk cache asynchronousely.
+ *
+ * @param key The unique key used to store the wanted image
+ * @param diskOnly Boolean to instruct the cache on placing the retreived disk object into memory.  TRUE implies disk only.
+ */
+- (void)queryDiskCacheForKey:(NSString *)key diskOnly:(BOOL)diskOnly done:(void (^)(UIImage *image, SDImageCacheType cacheType))doneBlock;
+
+/**
+ * Query the disk cache asynchronousely.
+ *
+ * @param key The unique key used to check for a cached value on disk
+ */
+- (BOOL) diskCacheExistsForKey:(NSString *)key;
+
 
 /**
  * Query the memory cache.

@@ -86,7 +86,7 @@
     [self.runningOperations addObject:operation];
     NSString *key = [self cacheKeyForURL:url];
 
-    [self.imageCache queryDiskCacheForKey:key done:^(UIImage *image, SDImageCacheType cacheType)
+    [self.imageCache queryDiskCacheForKey:key diskOnly:(options & SDWebImageCacheDiskOnly) done:^(UIImage *image, SDImageCacheType cacheType)
     {
         if (operation.isCancelled) return;
 
@@ -113,7 +113,7 @@
                 }
                 else if (downloadedImage && finished)
                 {
-                    [self.imageCache storeImage:downloadedImage imageData:data forKey:key toDisk:YES];
+                    [self.imageCache storeImage:downloadedImage imageData:data forKey:key toDisk:YES toMemory:!(options & SDWebImageCacheDiskOnly)];
                 }
 
                 if (finished)

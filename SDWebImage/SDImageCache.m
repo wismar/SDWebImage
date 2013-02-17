@@ -99,47 +99,58 @@ static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7 * 2; // 2 wee
 
 #pragma mark ImageCache
 
-- (void)storeImage:(UIImage *)image imageData:(NSData *)imageData forKey:(NSString *)key toDisk:(BOOL)toDisk
-{
+- (void)storeImage:(UIImage *)image imageData:(NSData *)imageData forKey:(NSString *)key toDisk:(BOOL)toDisk toMemory:(BOOL)toMemory {
+    
     if (!image || !key)
     {
         return;
     }
-
-    [self.memCache setObject:image forKey:key cost:image.size.height * image.size.width * image.scale];
-
+    
+    if (toMemory) {
+        [self.memCache setObject:image forKey:key cost:image.size.height * image.size.width * image.scale];
+    } else {
+        NSLog(@"Disk only store");
+    }
+    
+    
     if (toDisk)
     {
         dispatch_async(self.ioQueue, ^
-        {
-            NSData *data = imageData;
-
-            if (!data)
-            {
-                if (image)
-                {
+                       {
+                           NSData *data = imageData;
+                           
+                           if (!data)
+                           {
+                               if (image)
+                               {
 #if TARGET_OS_IPHONE
-                    data = UIImageJPEGRepresentation(image, (CGFloat)1.0);
+                                   data = UIImageJPEGRepresentation(image, (CGFloat)1.0);
 #else
-                    data = [NSBitmapImageRep representationOfImageRepsInArray:image.representations usingType: NSJPEGFileType properties:nil];
+                                   data = [NSBitmapImageRep representationOfImageRepsInArray:image.representations usingType: NSJPEGFileType properties:nil];
 #endif
-                }
-            }
-
-            if (data)
-            {
-                // Can't use defaultManager another thread
-                NSFileManager *fileManager = NSFileManager.new;
-
-                if (![fileManager fileExistsAtPath:_diskCachePath])
-                {
-                    [fileManager createDirectoryAtPath:_diskCachePath withIntermediateDirectories:YES attributes:nil error:NULL];
-                }
-
-                [fileManager createFileAtPath:[self cachePathForKey:key] contents:data attributes:nil];
-            }
-        });
+                               }
+                           }
+                           
+                           if (data)
+                           {
+                               // Can't use defaultManager another thread
+                               NSFileManager *fileManager = NSFileManager.new;
+                               
+                               if (![fileManager fileExistsAtPath:_diskCachePath])
+                               {
+                                   [fileManager createDirectoryAtPath:_diskCachePath withIntermediateDirectories:YES attributes:nil error:NULL];
+                               }
+                               
+                               [fileManager createFileAtPath:[self cachePathForKey:key] contents:data attributes:nil];
+                           }
+                       });
     }
+}
+
+
+- (void)storeImage:(UIImage *)image imageData:(NSData *)imageData forKey:(NSString *)key toDisk:(BOOL)toDisk
+{
+    [self storeImage:image imageData:imageData forKey:key toDisk:toDisk toMemory:YES];
 }
 
 - (void)storeImage:(UIImage *)image forKey:(NSString *)key
@@ -157,16 +168,16 @@ static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7 * 2; // 2 wee
     return [self.memCache objectForKey:key];
 }
 
-- (void)queryDiskCacheForKey:(NSString *)key done:(void (^)(UIImage *image, SDImageCacheType cacheType))doneBlock
+- (void)queryDiskCacheForKey:(NSString *)key diskOnly:(BOOL)diskOnly done:(void (^)(UIImage *image, SDImageCacheType cacheType))doneBlock
 {
     if (!doneBlock) return;
-
+    
     if (!key)
     {
         doneBlock(nil, SDImageCacheTypeNone);
         return;
     }
-
+    
     // First check the in-memory cache...
     UIImage *image = [self imageFromMemoryCacheForKey:key];
     if (image)
@@ -174,22 +185,40 @@ static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7 * 2; // 2 wee
         doneBlock(image, SDImageCacheTypeMemory);
         return;
     }
-
+    
     dispatch_async(self.ioQueue, ^
-    {
-        UIImage *diskImage = [UIImage decodedImageWithImage:SDScaledImageForPath(key, [NSData dataWithContentsOfFile:[self cachePathForKey:key]])];
+                   {
+                       //NSLog(@"Fetching file %@", key);
+                       UIImage *diskImage = [UIImage decodedImageWithImage:SDScaledImageForPath(key, [NSData dataWithContentsOfFile:[self cachePathForKey:key]])];
+                       //NSLog(@"Fetched %@, it was %@", key, diskImage);
+                       if (diskImage)
+                       {
+                           CGFloat cost = diskImage.size.height * diskImage.size.width * diskImage.scale;
+                           
+                           if(!diskOnly){
+                               [self.memCache setObject:diskImage forKey:key cost:cost];
+                           } else {
+                               //NSLog(@"Disk-only fetch");
+                           }
+                        }
+                       
+                       dispatch_async(dispatch_get_main_queue(), ^
+                                      {
+                                          doneBlock(diskImage, SDImageCacheTypeDisk);
+                                      });
+                   });
+}
 
-        if (diskImage)
-        {
-            CGFloat cost = diskImage.size.height * diskImage.size.width * diskImage.scale;
-            [self.memCache setObject:diskImage forKey:key cost:cost];
-        }
+- (void)queryDiskCacheForKey:(NSString *)key done:(void (^)(UIImage *image, SDImageCacheType cacheType))doneBlock
+{
+    [self queryDiskCacheForKey:key diskOnly:FALSE done:doneBlock];
+}
 
-        dispatch_async(dispatch_get_main_queue(), ^
-        {
-            doneBlock(diskImage, SDImageCacheTypeDisk);
-        });
-    });
+- (BOOL) diskCacheExistsForKey:(NSString *)key {
+    
+    return [[NSFileManager defaultManager] fileExistsAtPath:[self cachePathForKey:key]];
+    
+    
 }
 
 - (void)removeImageForKey:(NSString *)key
@@ -217,6 +246,7 @@ static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7 * 2; // 2 wee
 
 - (void)clearMemory
 {
+    NSLog(@"Cleaning memory cache of %d objects", [self.memCache countLimit]);
     [self.memCache removeAllObjects];
 }
 

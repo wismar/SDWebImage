@@ -31,7 +31,13 @@ typedef enum
      * This flag enables progressive download, the image is displayed progressively during download as a browser would do.
      * By default, the image is only displayed once completely downloaded.
      */
-    SDWebImageProgressiveDownload = 1 << 3
+    SDWebImageProgressiveDownload = 1 << 3,
+    /**
+     * This flag is passed to the downloader and eventually to the SDImageCache to disable the memory-caching of
+     * downloaded files.  Useful when the prefetcher runs on startup, and all images are already on disk.  Otherwise you fill
+     * the memory cache *very* quickly and may be killed after multiple memory warnings
+     */
+    SDWebImageCacheDiskOnly = 1 << 4
 } SDWebImageOptions;
 
 typedef void(^SDWebImageCompletedBlock)(UIImage *image, NSError *error, SDImageCacheType cacheType);
