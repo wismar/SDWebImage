@@ -300,6 +300,8 @@ static const NSInteger kDefaultCacheMaxCacheAge = 60 * 60 * 24 * 7; // 1 weeks
     NSDirectoryEnumerator *fileEnumerator = [[NSFileManager defaultManager] enumeratorAtPath:self.diskCachePath];
     for (NSString *fileName in fileEnumerator)
     {
+        NSString* niner = fileName;
+        NSLog(@"Niner %@", niner);
         count += 1;
     }
     
